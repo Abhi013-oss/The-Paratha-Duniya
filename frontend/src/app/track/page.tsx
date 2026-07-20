@@ -164,29 +164,7 @@ function TrackContent() {
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Menu
         </Link>
 
-        {/* Search Panel */}
-        <div className="glass-panel p-6 rounded-2xl border border-zinc-850 text-left space-y-4 mb-8">
-          <h2 className="text-base font-bold text-white tracking-wide uppercase">Track Your Parathas</h2>
-          <form onSubmit={handleSearchSubmit} className="flex gap-2">
-            <div className="relative flex-grow">
-              <input
-                type="text"
-                required
-                placeholder="Enter Order Number (e.g. TPD-10001)"
-                value={orderIdInput}
-                onChange={(e) => setOrderIdInput(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-[#121212] border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-primary uppercase tracking-wider"
-              />
-              <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" />
-            </div>
-            <button
-              type="submit"
-              className="px-6 py-3 bg-primary text-black font-bold text-sm rounded-xl hover:bg-amber-400 gold-glow transition-all shrink-0"
-            >
-              Track
-            </button>
-          </form>
-        </div>
+
 
         {/* Status Tracker display */}
         {loading && !order ? (

@@ -58,18 +58,19 @@ export default function CheckoutPage() {
     }
   }, [customer]);
 
-  // 2 minutes session timer for UPI payment
+  // 45 seconds session timer for UPI payment with automatic order confirmation
   useEffect(() => {
     if (showUpiModal) {
-      setPaymentTimeLeft(120);
+      setPaymentTimeLeft(45);
 
-      // 2-minute countdown timer interval
       const interval = setInterval(() => {
         setPaymentTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(interval);
-            setShowUpiModal(false);
-            alert("Payment session expired. Please scan and pay again.");
+            // Automatically confirm order after 45 seconds
+            setTimeout(() => {
+              handleConfirmUpiPayment();
+            }, 100);
             return 0;
           }
           return prev - 1;
@@ -713,16 +714,26 @@ export default function CheckoutPage() {
                   {/* Countdown Timer */}
                   <div className="py-2.5 px-3 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold rounded-xl flex items-center justify-center space-x-2">
                     <Clock className="w-4 h-4 animate-pulse shrink-0" />
-                    <span>Payment Session Expires In: {formatTime(paymentTimeLeft)}</span>
+                    <span>Auto Redirecting In: {paymentTimeLeft}s</span>
                   </div>
 
                   <button
                     id="confirm-payment-btn"
-                    disabled={upiLoading}
+                    disabled={upiLoading || paymentTimeLeft > 0}
                     onClick={handleConfirmUpiPayment}
-                    className="w-full py-3.5 bg-primary text-black font-extrabold text-sm rounded-xl text-center hover:bg-amber-400 transition-all duration-300 gold-glow flex items-center justify-center space-x-2 disabled:opacity-50"
+                    className={`w-full py-3.5 font-extrabold text-sm rounded-xl text-center transition-all duration-300 flex items-center justify-center space-x-2 ${
+                      paymentTimeLeft > 0 || upiLoading
+                        ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-750 opacity-75'
+                        : 'bg-primary text-black hover:bg-amber-400 gold-glow cursor-pointer'
+                    }`}
                   >
-                    <span>{upiLoading ? 'Placing Order...' : 'I Have Paid / Confirm Order'}</span>
+                    <span>
+                      {upiLoading 
+                        ? 'Placing Order...' 
+                        : paymentTimeLeft > 0 
+                          ? `Verifying Payment... (${paymentTimeLeft}s)` 
+                          : 'I Have Paid / Confirm Order'}
+                    </span>
                     <ArrowRight className="w-4.5 h-4.5" />
                   </button>
 

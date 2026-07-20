@@ -4,7 +4,7 @@
   "description": "Premium backend API for The Paratha Duniya ordering website",
   "main": "dist/server.js",
   "scripts": {
-    "build": "chmod -R +x node_modules/.bin || true && npx prisma generate && tsc",
+    "build": "chmod -R +x node_modules/.bin || true && npx prisma generate && npx prisma db push && npx ts-node prisma/seed.ts || true && tsc",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "prisma:generate": "prisma generate",

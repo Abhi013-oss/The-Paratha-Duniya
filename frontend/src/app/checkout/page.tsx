@@ -221,7 +221,7 @@ export default function CheckoutPage() {
 
       // Initialize real Razorpay SDK Modal
       const options = {
-        key: 'rzp_test_mockKey123',
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_mockKey123',
         amount: paymentOrder.amount,
         currency: paymentOrder.currency,
         name: 'The Paratha Duniya',

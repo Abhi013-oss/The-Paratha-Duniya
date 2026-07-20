@@ -1,38 +1,67 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Sparkles, ShoppingBag, RotateCw, CheckCircle, ArrowRight, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, ShoppingBag, RotateCw, CheckCircle, X } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '../../config/api';
 
-const WHEEL_ITEMS = [
-  { id: 186, name: 'Cheese Chilli Garlic Paratha', price: 80, color: '#F4A623', image: '/images/cheese_chilli_garlic.jpg', desc: 'Melted mozzarella cheese, spicy chillies & roasted garlic.' },
-  { id: 167, name: 'Classic Aloo Paratha', price: 60, color: '#D97706', image: '/images/aloo.jpg', desc: 'Spiced potato filling with fresh coriander & desi ghee.' },
-  { id: 3, name: 'Paneer Butter Paratha', price: 110, color: '#B45309', image: '/images/paneer.jpg', desc: 'Fresh malai paneer with aromatic Punjabi spices.' },
-  { id: 4, name: 'Mix Veg Paratha', price: 75, color: '#92400E', image: '/images/mix_veg.jpg', desc: 'Loaded with carrots, peas, potatoes & spicy herbs.' },
-  { id: 5, name: 'Sattu Spice Paratha', price: 85, color: '#F59E0B', image: '/images/sattu.jpg', desc: 'Bihari roasted gram flour with pickle spices.' },
-  { id: 6, name: 'Aloo Pyaz Paratha', price: 70, color: '#EAB308', image: '/images/onion.jpg', desc: 'Crispy onions blended with spiced mashed potatoes.' },
-  { id: 7, name: 'Gobhi Stuffed Paratha', price: 75, color: '#CA8A04', image: '/images/gobhi.jpg', desc: 'Grated cauliflower seasoned with ginger & green chillies.' },
-  { id: 2, name: 'Luxury Dry Fruit Paratha', price: 249, color: '#A16207', image: '/images/butter.jpg', desc: 'Rich saffron, almonds, cashews & pure desi ghee.' },
+// Official Paratha Duniya Menu Items fallback
+const OFFICIAL_MENU_FALLBACK = [
+  { id: 1, name: 'Classic Aloo Paratha', price: 60, image: '/images/aloo.jpg', desc: 'Generously stuffed with spiced mashed potatoes, green chillies, and fresh coriander.' },
+  { id: 2, name: 'Cheese Chilli Garlic Paratha', price: 80, image: '/images/cheese_chilli_garlic.jpg', desc: 'A mouthwatering fusion of melted cheese, spicy green chillies, and roasted garlic bits.' },
+  { id: 3, name: 'Gobhi Paratha', price: 60, image: '/images/gobhi.jpg', desc: 'Loaded with grated fresh cauliflower, seasoned ginger, green chillies, and roasted cumin.' },
+  { id: 6, name: 'Paneer Paratha', price: 70, image: '/images/paneer.jpg', desc: 'Stuffed with fresh grated spiced paneer cottage cheese, roasted onions, and traditional herbs.' },
+  { id: 7, name: 'Cheese Paratha', price: 70, image: '/images/cheese.jpg', desc: 'Melted premium cheese loaded inside a crispy layered flatbread. Extremely gooey and satisfying.' },
+  { id: 9, name: 'Onion Paratha', price: 60, image: '/images/onion.jpg', desc: 'Finely chopped crispy onions seasoned with carom seeds (ajwain) and traditional spices.' },
+  { id: 10, name: 'Mixed Veg Paratha', price: 60, image: '/images/mix_veg.jpg', desc: 'A delicious assortment of potatoes, carrots, beans, peas, and paneer stuffed in crispy dough.' },
+  { id: 11, name: 'Sattu Paratha', price: 60, image: '/images/sattu.jpg', desc: 'Traditional roasted gram flour (sattu) stuffed with pickle spices, mustard oil, garlic, and chillies.' },
 ];
 
 export default function SpinWheelSection() {
   const { addToCart } = useCart();
+  const [wheelItems, setWheelItems] = useState(OFFICIAL_MENU_FALLBACK);
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
-  const [winner, setWinner] = useState<typeof WHEEL_ITEMS[0] | null>(null);
+  const [winner, setWinner] = useState<typeof OFFICIAL_MENU_FALLBACK[0] | null>(null);
   const [addedSuccess, setAddedSuccess] = useState(false);
 
+  // Fetch actual products from API if available
+  useEffect(() => {
+    const fetchMenuForWheel = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/products`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length >= 8) {
+            const mapped = data.slice(0, 8).map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              image: p.image || '/images/aloo.jpg',
+              desc: p.description || 'Authentic butterloaded paratha prepared fresh on order.',
+            }));
+            setWheelItems(mapped);
+          }
+        }
+      } catch (e) {
+        console.log('Using official menu fallback for spin wheel.');
+      }
+    };
+
+    fetchMenuForWheel();
+  }, []);
+
   const spinWheel = () => {
-    if (spinning) return;
+    if (spinning || wheelItems.length === 0) return;
 
     setSpinning(true);
     setWinner(null);
     setAddedSuccess(false);
 
     // Calculate random target index (0 to 7)
-    const randomIndex = Math.floor(Math.random() * WHEEL_ITEMS.length);
-    const sliceAngle = 360 / WHEEL_ITEMS.length;
+    const randomIndex = Math.floor(Math.random() * wheelItems.length);
+    const sliceAngle = 360 / wheelItems.length;
 
     // Full rotations (5 to 8 turns) + offset to slice center
     const extraTurns = (5 + Math.floor(Math.random() * 3)) * 360;
@@ -44,7 +73,7 @@ export default function SpinWheelSection() {
 
     setTimeout(() => {
       setSpinning(false);
-      setWinner(WHEEL_ITEMS[randomIndex]);
+      setWinner(wheelItems[randomIndex]);
     }, 4500);
   };
 
@@ -88,7 +117,7 @@ export default function SpinWheelSection() {
           </h2>
 
           <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
-            Let fate choose your meal! Spin the wheel to pick your dish, add it straight to your basket, and enjoy royal butterloaded goodness.
+            Let fate choose your meal from our official menu! Spin the wheel to pick your dish, add it straight to your basket, and enjoy royal butterloaded goodness.
           </p>
         </div>
 
@@ -108,8 +137,8 @@ export default function SpinWheelSection() {
               style={{ transform: `rotate(${rotation}deg)` }}
             >
               <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                {WHEEL_ITEMS.map((item, index) => {
-                  const sliceAngle = 360 / WHEEL_ITEMS.length;
+                {wheelItems.map((item, index) => {
+                  const sliceAngle = 360 / wheelItems.length;
                   const startAngle = index * sliceAngle;
                   const endAngle = (index + 1) * sliceAngle;
 
@@ -124,6 +153,8 @@ export default function SpinWheelSection() {
                   const midAngle = startAngle + sliceAngle / 2;
                   const textX = 50 + 32 * Math.cos((Math.PI * midAngle) / 180);
                   const textY = 50 + 32 * Math.sin((Math.PI * midAngle) / 180);
+
+                  const shortName = item.name.replace('Paratha', '').trim().split(' ')[0];
 
                   return (
                     <g key={item.id}>
@@ -143,7 +174,7 @@ export default function SpinWheelSection() {
                         alignmentBaseline="middle"
                         transform={`rotate(${midAngle + 90}, ${textX}, ${textY})`}
                       >
-                        {item.name.split(' ')[0]}
+                        {shortName}
                       </text>
                     </g>
                   );
@@ -189,7 +220,7 @@ export default function SpinWheelSection() {
 
               <div className="flex items-center space-x-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
                 <Sparkles className="w-4 h-4" />
-                <span>The Wheel Has Spoken!</span>
+                <span>The Wheel Selected Your Menu Dish!</span>
               </div>
 
               <div className="flex items-center space-x-4">
@@ -217,7 +248,7 @@ export default function SpinWheelSection() {
                     className="flex-grow py-3.5 bg-primary hover:bg-amber-400 text-black font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center space-x-2 gold-glow"
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    <span>Add to Cart & Order</span>
+                    <span>Add to Cart & Order (₹{winner.price})</span>
                   </button>
 
                   <button

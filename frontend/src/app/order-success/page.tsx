@@ -78,13 +78,7 @@ function OrderSuccessContent() {
     window.open(whatsappUrl, '_blank');
   };
 
-  // Trigger WhatsApp automatically on page load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      handleWhatsAppRedirect();
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [order]);
+
 
   if (loading) {
     return (

@@ -162,7 +162,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           setLoading(false);
         }
       });
-      tokenClient.requestAccessToken();
+      tokenClient.requestAccessToken({ prompt: 'select_account' });
     } catch (err) {
       setLoading(false);
     }

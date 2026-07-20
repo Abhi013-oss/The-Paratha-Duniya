@@ -7,6 +7,7 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import ItemCustomizeModal from '../../components/ui/ItemCustomizeModal';
 import { API_BASE_URL } from '../../config/api';
+import SpinWheelSection from '../../components/ui/SpinWheelSection';
 
 // Local fallbacks matching the seed database for instant client-side testing
 const fallbackProducts = [
@@ -747,6 +748,9 @@ export default function MenuPage() {
           </div>
         </div>
       )}
+
+      {/* SPIN THE WHEEL CHALLENGE SECTION */}
+      <SpinWheelSection />
 
       {/* Item Customization Modal */}
       {customizingProduct && (

@@ -8,6 +8,7 @@ import ParathaVisual from '../components/ui/ParathaVisual';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config/api';
+import SpinWheelSection from '../components/ui/SpinWheelSection';
 
 // Hardcoded popular items for quick display on home page
 const popularItems = [
@@ -763,6 +764,9 @@ export default function HomePage() {
           </div>
         </div>
       </motion.section>
+
+      {/* SPIN THE WHEEL CHALLENGE SECTION */}
+      <SpinWheelSection />
 
       {/* STICKY QUICK LINKS IN FLOATING FOOTER BAR */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col space-y-3">

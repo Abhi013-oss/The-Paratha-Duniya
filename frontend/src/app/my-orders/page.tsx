@@ -234,11 +234,11 @@ export default function MyOrdersPage() {
                       </div>
 
                       <button
-                        onClick={() => router.push(`/track?orderId=${order.orderNumber}`)}
+                        onClick={() => router.push(`/order-success?orderId=${order.orderNumber}`)}
                         className="w-full py-2.5 bg-zinc-900 hover:bg-primary border border-zinc-800 hover:border-primary text-primary hover:text-black font-bold text-xs rounded-xl flex items-center justify-center space-x-1.5 transition-all duration-300"
                       >
-                        <span>Track Order</span>
-                        <ChevronRight className="w-4.5 h-4.5" />
+                        <span>📄 View Invoice</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>

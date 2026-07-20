@@ -600,10 +600,10 @@ function ProfileContent() {
                             </span>
                             
                             <Link
-                              href={`/track?orderId=${o.orderNumber}`}
+                              href={`/order-success?orderId=${o.orderNumber}`}
                               className="mt-2 text-primary bg-primary/5 hover:bg-primary hover:text-black border border-primary/20 hover:border-transparent transition-all duration-300 py-1.5 px-3 rounded-lg text-[10px] font-bold flex items-center space-x-1"
                             >
-                              <span>Track Live</span>
+                              <span>📄 View Invoice</span>
                               <ArrowRight className="w-3 h-3" />
                             </Link>
                           </div>

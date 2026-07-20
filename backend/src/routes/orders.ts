@@ -287,7 +287,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     );
 
     // 7. Instant Admin Phone Notification Alert
-    const adminPhone = process.env.ADMIN_PHONE_NUMBER || '919492760128';
+    const adminPhone = process.env.ADMIN_PHONE_NUMBER || '+919492760128';
     sendAutomatedWhatsApp(
       adminPhone,
       `🚨 *NEW ORDER RECEIVED!* 🫓\n\n*Order Number:* ${newOrder.orderNumber}\n*Customer:* ${customer.name} (${customer.phone})\n*Total Amount:* ₹${newOrder.total}\n*Payment Method:* ${newOrder.paymentMethod}\n*Delivery Address:* ${customer.houseNo || ''} ${customer.address || ''}\n\nReview & Confirm Order: http://localhost:3000/admin`

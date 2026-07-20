@@ -6,6 +6,7 @@ import { Search, ShoppingBag, ArrowRight, Minus, Plus, SearchCheck, CheckCircle 
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import ItemCustomizeModal from '../../components/ui/ItemCustomizeModal';
+import { API_BASE_URL } from '../../config/api';
 
 // Local fallbacks matching the seed database for instant client-side testing
 const fallbackProducts = [
@@ -248,7 +249,7 @@ export default function MenuPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/products');
+        const res = await fetch('${API_BASE_URL}/api/products');
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {
@@ -269,7 +270,7 @@ export default function MenuPage() {
     try {
       setTrackError('');
       setTrackingOrder(null);
-      const res = await fetch(`http://localhost:5000/api/orders/track/${orderQuery.trim().toUpperCase()}`);
+      const res = await fetch(`${API_BASE_URL}/api/orders/track/${orderQuery.trim().toUpperCase()}`);
       if (!res.ok) {
         const errData = await res.json();
         setTrackError(errData.error || 'Order number not found.');

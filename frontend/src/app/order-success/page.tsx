@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, ShoppingBag, MessageSquare, PhoneCall, AlertTriangle, Clock } from 'lucide-react';
+import { API_BASE_URL } from '../../config/api';
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
@@ -27,7 +28,7 @@ function OrderSuccessContent() {
 
     const fetchOrderDetails = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/orders/track/${orderId}`);
+        const res = await fetch(`${API_BASE_URL}/api/orders/track/${orderId}`);
         if (!res.ok) {
           throw new Error('Failed to load order from database.');
         }

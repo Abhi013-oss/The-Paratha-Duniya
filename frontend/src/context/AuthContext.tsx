@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 interface CustomerProfile {
   id: number;
@@ -51,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const verifyToken = async (authToken: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/customer/auth/verify', {
+      const res = await fetch(`${API_BASE_URL}/api/customer/auth/verify`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (loginId: string, password: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/customer/auth/login', {
+      const res = await fetch(`${API_BASE_URL}/api/customer/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ loginId, password }),
@@ -97,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (name: string, phone: string, email: string, password: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/customer/auth/register', {
+      const res = await fetch(`${API_BASE_URL}/api/customer/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, phone, email, password }),
@@ -121,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const googleLogin = async (googleId: string, email: string, name: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/customer/auth/google-login', {
+      const res = await fetch(`${API_BASE_URL}/api/customer/auth/google-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ googleId, email, name }),
@@ -157,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (fields: Partial<CustomerProfile>) => {
     try {
-      const res = await fetch('http://localhost:5000/api/customer/auth/update', {
+      const res = await fetch(`${API_BASE_URL}/api/customer/auth/update`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

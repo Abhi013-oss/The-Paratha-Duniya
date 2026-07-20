@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../../config/api';
 import { 
   ShieldCheck, LayoutDashboard, ShoppingBag, Plus, Edit, Trash, 
   Users, Ticket, LogOut, Search, RefreshCw, CheckCircle, 
@@ -106,7 +107,7 @@ export default function AdminPortal() {
 
     try {
       // Verify token
-      const verifyRes = await fetch('http://localhost:5000/api/auth/verify', {
+      const verifyRes = await fetch('${API_BASE_URL}/api/auth/verify', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -126,13 +127,13 @@ export default function AdminPortal() {
     const token = localStorage.getItem('tpd_admin_token');
 
     try {
-      const prodRes = await fetch('http://localhost:5000/api/products');
+      const prodRes = await fetch('${API_BASE_URL}/api/products');
       if (prodRes.ok) {
         const prodData = await prodRes.json();
         setProducts(prodData);
       }
 
-      const oRes = await fetch('http://localhost:5000/api/orders', {
+      const oRes = await fetch('${API_BASE_URL}/api/orders', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (oRes.ok) {
@@ -169,7 +170,7 @@ export default function AdminPortal() {
         }
       }
 
-      const custRes = await fetch('http://localhost:5000/api/customers', {
+      const custRes = await fetch('${API_BASE_URL}/api/customers', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (custRes.ok) {
@@ -177,7 +178,7 @@ export default function AdminPortal() {
         setCustomers(custData);
       }
 
-      const cRes = await fetch('http://localhost:5000/api/coupons', {
+      const cRes = await fetch('${API_BASE_URL}/api/coupons', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (cRes.ok) {
@@ -185,7 +186,7 @@ export default function AdminPortal() {
         setCoupons(cData);
       }
 
-      const msgRes = await fetch('http://localhost:5000/api/contact');
+      const msgRes = await fetch('${API_BASE_URL}/api/contact');
       if (msgRes.ok) {
         const msgData = await msgRes.json();
         setContactMessages(msgData);
@@ -201,7 +202,7 @@ export default function AdminPortal() {
   const handleDeleteContactMessage = async (id: number) => {
     if (!confirm('Are you sure you want to delete this customer message?')) return;
     try {
-      await fetch(`http://localhost:5000/api/contact/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE_URL}/api/contact/${id}`, { method: 'DELETE' });
       setContactMessages(prev => prev.filter(m => m.id !== id));
     } catch (e) {
       console.error(e);
@@ -218,7 +219,7 @@ export default function AdminPortal() {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      const res = await fetch('${API_BASE_URL}/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailInput, password: passwordInput }),
@@ -261,7 +262,7 @@ export default function AdminPortal() {
 
     if (!isSimulated && token) {
       try {
-        const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+        const res = await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -320,7 +321,7 @@ export default function AdminPortal() {
 
     if (!isSimulated && token) {
       try {
-        const res = await fetch('http://localhost:5000/api/products', {
+        const res = await fetch('${API_BASE_URL}/api/products', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -350,7 +351,7 @@ export default function AdminPortal() {
 
     if (!isSimulated && token) {
       try {
-        const res = await fetch(`http://localhost:5000/api/products/${prodId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/products/${prodId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -372,7 +373,7 @@ export default function AdminPortal() {
 
     if (!isSimulated && token) {
       try {
-        const res = await fetch(`http://localhost:5000/api/products/${prodId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/products/${prodId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -406,7 +407,7 @@ export default function AdminPortal() {
 
     if (!isSimulated && token) {
       try {
-        const res = await fetch('http://localhost:5000/api/coupons', {
+        const res = await fetch('${API_BASE_URL}/api/coupons', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -435,7 +436,7 @@ export default function AdminPortal() {
 
     if (!isSimulated && token) {
       try {
-        const res = await fetch(`http://localhost:5000/api/coupons/${couponId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/coupons/${couponId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -485,7 +486,7 @@ export default function AdminPortal() {
 
     try {
       if (!isSimulated && token) {
-        const res = await fetch('http://localhost:5000/api/auth/update-credentials', {
+        const res = await fetch('${API_BASE_URL}/api/auth/update-credentials', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

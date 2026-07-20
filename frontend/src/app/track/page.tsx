@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Search, MapPin, ClipboardList, CheckCircle2, Clock, Truck, ShieldAlert, ArrowLeft, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiveTrackingMap from '../../components/LiveTrackingMap';
+import { API_BASE_URL } from '../../config/api';
 
 function TrackContent() {
   const searchParams = useSearchParams();
@@ -43,7 +44,7 @@ function TrackContent() {
 
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/orders/track/${activeOrderId}`);
+        const res = await fetch(`${API_BASE_URL}/api/orders/track/${activeOrderId}`);
         if (!res.ok) {
           // Fallback for simulated/test orders or invalid IDs
           if (activeOrderId.startsWith('TPD-')) {

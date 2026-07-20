@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
+import { API_BASE_URL } from '../../config/api';
 import { User, Shield, MapPin, ClipboardList, ArrowRight, Lock, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -96,7 +97,7 @@ function ProfileContent() {
     const fetchOrders = async () => {
       setOrdersLoading(true);
       try {
-        const res = await fetch('http://localhost:5000/api/orders/my-orders', {
+        const res = await fetch('${API_BASE_URL}/api/orders/my-orders', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -169,7 +170,7 @@ function ProfileContent() {
 
     setPasswordLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/customer/auth/update-password', {
+      const res = await fetch('${API_BASE_URL}/api/customer/auth/update-password', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

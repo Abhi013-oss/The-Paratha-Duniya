@@ -7,6 +7,7 @@ import { ShieldCheck, Flame, Award, Truck, Star, Heart, ArrowRight, CheckCircle,
 import ParathaVisual from '../components/ui/ParathaVisual';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 // Hardcoded popular items for quick display on home page
 const popularItems = [
@@ -81,7 +82,7 @@ export default function HomePage() {
     e.preventDefault();
     setContactLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/contact', {
+      const res = await fetch(`${API_BASE_URL}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

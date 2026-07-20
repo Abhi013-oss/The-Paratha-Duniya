@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 export interface CartItem {
   id: number;
@@ -109,7 +110,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('tpd_coupon');
   };
 
-  const applyCouponCode = async (code: string, backendUrl = 'http://localhost:5000') => {
+  const applyCouponCode = async (code: string, backendUrl = API_BASE_URL) => {
     try {
       const res = await fetch(`${backendUrl}/api/coupons/validate`, {
         method: 'POST',

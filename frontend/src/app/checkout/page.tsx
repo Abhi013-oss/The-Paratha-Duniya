@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ShoppingBag, ArrowLeft, Tag, ShieldCheck, CreditCard, CheckCircle, ArrowRight, Plus, Minus, Trash2, Clock } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { API_BASE_URL } from '../../config/api';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CheckoutPage() {
@@ -139,7 +140,7 @@ export default function CheckoutPage() {
     try {
       // 1. COD Checkout Flow
       if (paymentMethod === 'COD') {
-        const res = await fetch('http://localhost:5000/api/orders', {
+        const res = await fetch('${API_BASE_URL}/api/orders', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -169,7 +170,7 @@ export default function CheckoutPage() {
       }
 
       // 3. Online Payment Checkout Flow (RAZORPAY)
-      const paymentOrderRes = await fetch('http://localhost:5000/api/payments/order', {
+      const paymentOrderRes = await fetch('${API_BASE_URL}/api/payments/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: grandTotal, receipt: `rcpt_${Date.now()}` }),
@@ -185,7 +186,7 @@ export default function CheckoutPage() {
       if (paymentOrder.isMock) {
         console.log('Simulating successful online checkout...');
         
-        const createOrderRes = await fetch('http://localhost:5000/api/orders', {
+        const createOrderRes = await fetch('${API_BASE_URL}/api/orders', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -201,7 +202,7 @@ export default function CheckoutPage() {
         const orderData = await createOrderRes.json();
         const orderNum = orderData.order.orderNumber;
 
-        await fetch('http://localhost:5000/api/payments/verify', {
+        await fetch('${API_BASE_URL}/api/payments/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -227,7 +228,7 @@ export default function CheckoutPage() {
         order_id: paymentOrder.id,
         handler: async function (response: any) {
           try {
-            const createOrderRes = await fetch('http://localhost:5000/api/orders', {
+            const createOrderRes = await fetch('${API_BASE_URL}/api/orders', {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
@@ -243,7 +244,7 @@ export default function CheckoutPage() {
             const orderData = await createOrderRes.json();
             const orderNum = orderData.order.orderNumber;
 
-            const verifyRes = await fetch('http://localhost:5000/api/payments/verify', {
+            const verifyRes = await fetch('${API_BASE_URL}/api/payments/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -297,7 +298,7 @@ export default function CheckoutPage() {
     setUpiLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/orders', {
+      const res = await fetch('${API_BASE_URL}/api/orders', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

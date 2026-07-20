@@ -112,8 +112,8 @@ export default function Footer() {
               </li>
               <li className="border-t border-zinc-900 pt-3 mt-3 flex items-center space-x-2">
                 <Mail className="w-4 h-4 text-primary" />
-                <a href="mailto:hello@parathaduniya.com" className="hover:text-primary transition-colors">
-                  hello@parathaduniya.com
+                <a href="mailto:punnushri084@gmail.com" className="hover:text-primary transition-colors">
+                  punnushri084@gmail.com
                 </a>
               </li>
             </ul>

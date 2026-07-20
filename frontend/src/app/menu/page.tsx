@@ -249,7 +249,7 @@ export default function MenuPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('${API_BASE_URL}/api/products');
+        const res = await fetch(`${API_BASE_URL}/api/products`);
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {

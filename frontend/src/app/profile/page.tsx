@@ -97,7 +97,7 @@ function ProfileContent() {
     const fetchOrders = async () => {
       setOrdersLoading(true);
       try {
-        const res = await fetch('${API_BASE_URL}/api/orders/my-orders', {
+        const res = await fetch(`${API_BASE_URL}/api/orders/my-orders`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -170,7 +170,7 @@ function ProfileContent() {
 
     setPasswordLoading(true);
     try {
-      const res = await fetch('${API_BASE_URL}/api/customer/auth/update-password', {
+      const res = await fetch(`${API_BASE_URL}/api/customer/auth/update-password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

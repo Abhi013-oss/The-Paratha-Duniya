@@ -89,11 +89,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/menu#track" className="text-zinc-400 hover:text-primary text-sm transition-colors">
-                  Track Your Order
-                </Link>
-              </li>
-              <li>
                 <Link href="/admin" className="text-zinc-400 hover:text-primary text-sm transition-colors">
                   Merchant Access (Admin)
                 </Link>

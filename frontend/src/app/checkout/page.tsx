@@ -158,7 +158,7 @@ export default function CheckoutPage() {
         const data = await res.json();
         const orderNum = data.order.orderNumber;
         clearCart();
-        router.push(`/track?orderId=${orderNum}`);
+        router.push(`/order-success?orderId=${orderNum}&method=COD`);
         return;
       }
 
@@ -215,7 +215,7 @@ export default function CheckoutPage() {
         });
 
         clearCart();
-        router.push(`/track?orderId=${orderNum}`);
+        router.push(`/order-success?orderId=${orderNum}&method=ONLINE`);
         return;
       }
 
@@ -262,7 +262,7 @@ export default function CheckoutPage() {
             }
 
             clearCart();
-            router.push(`/track?orderId=${orderNum}`);
+            router.push(`/order-success?orderId=${orderNum}&method=ONLINE`);
           } catch (e) {
             console.error('Payment callback error:', e);
             alert('Something went wrong during order confirmation.');
@@ -288,7 +288,7 @@ export default function CheckoutPage() {
       
       const mockOrderNum = `TPD-${10000 + Math.floor(Math.random() * 9000) + 1000}`;
       clearCart();
-      router.push(`/track?orderId=${mockOrderNum}`);
+      router.push(`/order-success?orderId=${mockOrderNum}&method=COD&simulated=true`);
     } finally {
       setIsSubmitting(false);
     }
@@ -318,14 +318,14 @@ export default function CheckoutPage() {
       
       setShowUpiModal(false);
       clearCart();
-      router.push(`/track?orderId=${orderNum}`);
+      router.push(`/order-success?orderId=${orderNum}&method=UPI`);
     } catch (err) {
       console.error('UPI submit error:', err);
       // Offline fallback
       setShowUpiModal(false);
       const mockOrderNum = `TPD-${10000 + Math.floor(Math.random() * 9000) + 1000}`;
       clearCart();
-      router.push(`/track?orderId=${mockOrderNum}`);
+      router.push(`/order-success?orderId=${mockOrderNum}&method=UPI&simulated=true`);
     } finally {
       setUpiLoading(false);
     }
@@ -711,29 +711,13 @@ export default function CheckoutPage() {
                     UPI ID: 6303263714@ybl
                   </div>
 
-                  {/* Countdown Timer */}
-                  <div className="py-2.5 px-3 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold rounded-xl flex items-center justify-center space-x-2">
-                    <Clock className="w-4 h-4 animate-pulse shrink-0" />
-                    <span>Auto Redirecting In: {paymentTimeLeft}s</span>
-                  </div>
-
                   <button
                     id="confirm-payment-btn"
-                    disabled={upiLoading || paymentTimeLeft > 0}
+                    disabled={upiLoading}
                     onClick={handleConfirmUpiPayment}
-                    className={`w-full py-3.5 font-extrabold text-sm rounded-xl text-center transition-all duration-300 flex items-center justify-center space-x-2 ${
-                      paymentTimeLeft > 0 || upiLoading
-                        ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-750 opacity-75'
-                        : 'bg-primary text-black hover:bg-amber-400 gold-glow cursor-pointer'
-                    }`}
+                    className="w-full py-3.5 bg-primary text-black font-extrabold text-sm rounded-xl text-center hover:bg-amber-400 transition-all duration-300 gold-glow flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
                   >
-                    <span>
-                      {upiLoading 
-                        ? 'Placing Order...' 
-                        : paymentTimeLeft > 0 
-                          ? `Verifying Payment... (${paymentTimeLeft}s)` 
-                          : 'I Have Paid / Confirm Order'}
-                    </span>
+                    <span>{upiLoading ? 'Placing Order...' : 'I Have Paid / Confirm Order'}</span>
                     <ArrowRight className="w-4.5 h-4.5" />
                   </button>
 

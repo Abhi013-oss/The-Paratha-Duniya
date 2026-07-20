@@ -35,7 +35,6 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Full Menu', path: '/menu' },
-    { name: 'Track Order', path: '/track' },
     ...(isLoggedIn ? [{ name: 'My Profile', path: '/profile' }] : []),
     { name: 'Admin Portal', path: '/admin' },
   ];

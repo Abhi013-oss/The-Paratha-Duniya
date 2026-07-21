@@ -4,7 +4,7 @@ import * as crypto from 'crypto';
 
 const router = Router();
 
-// Create Razorpay Order
+// Create Razorpay Order via Direct REST API
 router.post('/order', async (req: Request, res: Response): Promise<void> => {
   const { amount, receipt } = req.body;
 
@@ -15,58 +15,40 @@ router.post('/order', async (req: Request, res: Response): Promise<void> => {
 
   const amountInPaise = Math.round(Number(amount) * 100);
 
-    const keyId = (process.env.RAZORPAY_KEY_ID || '').replace(/['"]/g, '').trim();
-    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').replace(/['"]/g, '').trim();
+  try {
+    const keyId = (process.env.RAZORPAY_KEY_ID || 'rzp_live_TG3ZILfac213Ou').replace(/['"]/g, '').trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || 'j3vsgdgQ45rPhqn1DdiK1EaL').replace(/['"]/g, '').trim();
 
-    // Check if we are running in simulated/mock mode
-    if (!keyId || !keySecret || keyId === '' || keyId.startsWith('rzp_test_mockKey')) {
-      console.log('Razorpay keys not configured or mock key used. Operating in mock payment mode.');
-      res.json({
-        id: `order_mock_${Math.random().toString(36).substring(2, 11)}`,
-        entity: 'order',
-        amount: amountInPaise,
-        amount_paid: 0,
-        amount_due: amountInPaise,
-        currency: 'INR',
-        receipt: receipt || 'receipt_123',
-        status: 'created',
-        attempts: 0,
-        notes: [],
-        created_at: Math.floor(Date.now() / 1000),
-        isMock: true,
-      });
+    if (!keyId || !keySecret) {
+      res.status(400).json({ error: 'Razorpay Key ID or Key Secret is missing.' });
       return;
     }
 
-    // Try to load Razorpay dynamically
-    try {
-      const Razorpay = require('razorpay');
-      const razorpayInstance = new Razorpay({
-        key_id: keyId,
-        key_secret: keySecret,
-      });
-
-      const options = {
+    // Call official Razorpay Orders REST API via Basic Auth
+    const authHeader = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authHeader}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         amount: amountInPaise,
         currency: 'INR',
         receipt: receipt || `receipt_${Date.now()}`,
-      };
+      }),
+    });
 
-      const order = await razorpayInstance.orders.create(options);
-      res.json(order);
-    } catch (sdkError) {
-      console.error('Razorpay SDK failed to initialize. Falling back to mock order.', sdkError);
-      res.json({
-        id: `order_mock_${Math.random().toString(36).substring(2, 11)}`,
-        entity: 'order',
-        amount: amountInPaise,
-        currency: 'INR',
-        receipt: receipt || 'receipt_123',
-        status: 'created',
-        isMock: true,
-      });
+    const orderData = await response.json();
+
+    if (!response.ok) {
+      console.error('Razorpay API error response:', orderData);
+      res.status(response.status).json({ error: orderData.error?.description || 'Failed to create order on Razorpay.' });
+      return;
     }
-  } catch (error) {
+
+    res.json(orderData);
+  } catch (error: any) {
     console.error('Create payment order error:', error);
     res.status(500).json({ error: 'Failed to create payment order.' });
   }
@@ -100,7 +82,7 @@ router.post('/verify', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || 'j3vsgdgQ45rPhqn1DdiK1EaL').replace(/['"]/g, '').trim();
 
     if (!keySecret) {
       res.status(500).json({ error: 'Payment gateway configuration is missing.' });

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ShoppingBag, ArrowLeft, Tag, ShieldCheck, CreditCard, CheckCircle, ArrowRight, Plus, Minus, Trash2, Clock } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { API_BASE_URL } from '../../config/api';
+import { API_BASE_URL, HARDCODED_RAZORPAY_KEY_ID } from '../../config/api';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CheckoutPage() {
@@ -175,39 +175,10 @@ export default function CheckoutPage() {
 
       const paymentOrder = await paymentOrderRes.json();
 
-      // Check if it's a simulated order
+      // Check if backend Razorpay keys are missing
       if (paymentOrder.isMock) {
-        console.log('Simulating successful online checkout...');
-        
-        const createOrderRes = await fetch(`${API_BASE_URL}/api/orders`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-          },
-          body: JSON.stringify(orderPayload),
-        });
-
-        if (!createOrderRes.ok) {
-          throw new Error('Failed to register order in database.');
-        }
-
-        const orderData = await createOrderRes.json();
-        const orderNum = orderData.order.orderNumber;
-
-        await fetch(`${API_BASE_URL}/api/payments/verify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            razorpay_order_id: paymentOrder.id,
-            razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 11)}`,
-            isMock: true,
-            orderId: orderNum,
-          }),
-        });
-
-        clearCart();
-        router.push(`/order-success?orderId=${orderNum}&method=ONLINE`);
+        alert('⚠️ Razorpay Backend Keys Missing:\n\nPlease add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your Render Environment settings to process live online payments!');
+        setIsSubmitting(false);
         return;
       }
 
@@ -230,7 +201,13 @@ export default function CheckoutPage() {
         return;
       }
 
-      const activeRazorpayKey = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '').replace(/['"]/g, '').trim() || 'rzp_test_mockKey123';
+      const activeRazorpayKey = HARDCODED_RAZORPAY_KEY_ID || (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '').replace(/['"]/g, '').trim();
+
+      if (!activeRazorpayKey) {
+        alert('⚠️ Razorpay Frontend Key ID Missing:\n\nPlease add NEXT_PUBLIC_RAZORPAY_KEY_ID to your Vercel Environment Settings!');
+        setIsSubmitting(false);
+        return;
+      }
 
       // Initialize real Razorpay SDK Modal
       const options = {

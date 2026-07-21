@@ -48,6 +48,31 @@ export default function AdminPortal() {
   const [settingsPassword, setSettingsPassword] = useState('');
   const [settingsConfirmPassword, setSettingsConfirmPassword] = useState('');
   const [settingsError, setSettingsError] = useState('');
+
+  // PWA Home Screen Installation State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallHelpModal, setShowInstallHelpModal] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      setShowInstallHelpModal(true);
+    }
+  };
   const [settingsSuccess, setSettingsSuccess] = useState('');
   const [settingsLoading, setSettingsLoading] = useState(false);
 
@@ -747,6 +772,13 @@ Best regards,
               </span>
             </div>
           )}
+
+          <button
+            onClick={handleInstallPWA}
+            className="flex items-center justify-center space-x-2 w-full py-2.5 bg-primary text-black font-bold rounded-xl text-xs hover:bg-amber-400 gold-glow transition-all"
+          >
+            <span>📱 Add Admin to Phone</span>
+          </button>
 
           <button
             onClick={() => {
@@ -1527,6 +1559,56 @@ Best regards,
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* PWA Mobile App Installation Instructions Modal */}
+      {showInstallHelpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={() => setShowInstallHelpModal(false)}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          />
+          <div className="relative z-10 w-full max-w-md bg-[#121212] border border-zinc-800 p-6 sm:p-8 rounded-3xl text-left space-y-6 shadow-2xl">
+            <div className="flex justify-between items-center border-b border-zinc-900 pb-4">
+              <h3 className="font-serif text-lg font-bold text-white flex items-center space-x-2">
+                <span>📱 Add Paratha Admin to Phone</span>
+              </h3>
+              <button
+                onClick={() => setShowInstallHelpModal(false)}
+                className="text-zinc-500 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs text-zinc-300">
+              <div className="p-4 bg-zinc-950 border border-zinc-900 rounded-2xl space-y-2">
+                <span className="text-primary font-bold block uppercase tracking-wider text-[10px]">🟢 For Android (Google Chrome):</span>
+                <ol className="list-decimal list-inside space-y-1 text-zinc-400">
+                  <li>Tap the <strong>3 dots (⋮)</strong> at top-right of Chrome.</li>
+                  <li>Tap <strong>"Add to Home screen"</strong> (or <em>"Install app"</em>).</li>
+                  <li>Tap <strong>Add</strong>. The icon will appear on your phone!</li>
+                </ol>
+              </div>
+
+              <div className="p-4 bg-zinc-950 border border-zinc-900 rounded-2xl space-y-2">
+                <span className="text-primary font-bold block uppercase tracking-wider text-[10px]">🍎 For iPhone (Apple Safari):</span>
+                <ol className="list-decimal list-inside space-y-1 text-zinc-400">
+                  <li>Tap the <strong>Share icon [↑]</strong> at bottom center of Safari.</li>
+                  <li>Scroll down and tap <strong>"Add to Home Screen"</strong>.</li>
+                  <li>Tap <strong>Add</strong>. The icon will appear on your iPhone!</li>
+                </ol>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowInstallHelpModal(false)}
+              className="w-full py-3.5 bg-primary text-black font-extrabold text-xs uppercase tracking-wider rounded-xl hover:bg-amber-400 transition-colors"
+            >
+              Got It, Close
+            </button>
           </div>
         </div>
       )}

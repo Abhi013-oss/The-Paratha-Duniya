@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 /**
  * Service to send automated background WhatsApp notifications via Meta Cloud API or Twilio API.
  * Does NOT require opening WhatsApp Web or user interaction!
@@ -25,23 +23,22 @@ export async function sendAutomatedWhatsApp(
     // 1. META WHATSAPP CLOUD API DISPATCH
     if (metaToken && metaPhoneId) {
       console.log(`[WhatsApp Service] Sending via Meta WhatsApp Cloud API to +${cleanPhone}...`);
-      const response = await axios.post(
-        `https://graph.facebook.com/v18.0/${metaPhoneId}/messages`,
-        {
+      const response = await fetch(`https://graph.facebook.com/v18.0/${metaPhoneId}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${metaToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           messaging_product: 'whatsapp',
           recipient_type: 'individual',
           to: cleanPhone,
           type: 'text',
           text: { preview_url: false, body: messageText },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${metaToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return { success: true, mode: 'META_CLOUD_API', detail: response.data };
+        }),
+      });
+      const data = await response.json();
+      return { success: response.ok, mode: 'META_CLOUD_API', detail: data };
     }
 
     // 2. TWILIO WHATSAPP API DISPATCH
@@ -55,13 +52,16 @@ export async function sendAutomatedWhatsApp(
       params.append('To', `whatsapp:+${cleanPhone}`);
       params.append('Body', messageText);
 
-      const response = await axios.post(twilioUrl, params.toString(), {
+      const response = await fetch(twilioUrl, {
+        method: 'POST',
         headers: {
           Authorization: `Basic ${authHeader}`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
+        body: params.toString(),
       });
-      return { success: true, mode: 'TWILIO_API', detail: response.data };
+      const data = await response.json();
+      return { success: response.ok, mode: 'TWILIO_API', detail: data };
     }
 
     // 3. SIMULATED BACKGROUND DISPATCH (For local development when API Keys are pending)
@@ -73,14 +73,14 @@ export async function sendAutomatedWhatsApp(
     return {
       success: true,
       mode: 'DEVELOPMENT_SIMULATED',
-      detail: 'Message dispatched to background logs. Add META_WHATSAPP_TOKEN in backend/.env for live cellular carrier delivery.',
+      detail: 'Message dispatched to background logs.',
     };
   } catch (error: any) {
-    console.error('[WhatsApp Service Error]:', error.response?.data || error.message);
+    console.error('[WhatsApp Service Error]:', error?.message || error);
     return {
       success: false,
       mode: 'ERROR',
-      detail: error.response?.data || error.message,
+      detail: error?.message || error,
     };
   }
 }

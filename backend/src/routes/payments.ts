@@ -138,10 +138,12 @@ router.post('/verify', async (req: Request, res: Response): Promise<void> => {
     console.error('Verify payment signature error:', error);
     res.status(500).json({ error: 'Failed to verify payment.' });
   }
+});
+
 // Check Bank / UPI Payment Received Status
 router.get('/verify-status/:orderNumber', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { orderNumber } = req.params;
+    const orderNumber = String(req.params.orderNumber);
     const order = await prisma.order.findUnique({
       where: { orderNumber },
       select: { paymentStatus: true, status: true }

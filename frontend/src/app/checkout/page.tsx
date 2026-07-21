@@ -23,7 +23,7 @@ export default function CheckoutPage() {
   const [landmark, setLandmark] = useState('');
   const [pincode, setPincode] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'UPI' | 'RAZORPAY'>('UPI');
+  const [paymentMethod, setPaymentMethod] = useState<'ONLINE' | 'COD'>('ONLINE');
 
   // Coupon State
   const [couponInput, setCouponInput] = useState('');
@@ -162,15 +162,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      // 2. UPI Payment Checkout Flow
-      if (paymentMethod === 'UPI') {
-        setUpiOrderPayload(orderPayload);
-        setShowUpiModal(true);
-        setIsSubmitting(false);
-        return;
-      }
-
-      // 3. Online Payment Checkout Flow (RAZORPAY)
+      // 2. Online Payment Checkout Flow (RAZORPAY)
       const paymentOrderRes = await fetch(`${API_BASE_URL}/api/payments/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -476,13 +468,14 @@ export default function CheckoutPage() {
               </h2>
               <div className="grid grid-cols-1 gap-4">
                 {[
-                  { value: 'UPI', label: 'UPI (GPay/PhonePe / BHIM)' },
+                  { value: 'ONLINE', label: '💳 Online Payment (Razorpay / UPI / GPay / Cards / NetBanking)', desc: 'Instant & secure payment directly to your Razorpay account' },
+                  { value: 'COD', label: '💵 Cash on Delivery (COD)', desc: 'Pay cash upon arrival at your doorstep' },
                 ].map((pm) => (
                   <button
                     key={pm.value}
                     type="button"
                     onClick={() => setPaymentMethod(pm.value as any)}
-                    className={`p-4 rounded-xl border text-left flex flex-col justify-between h-24 transition-all duration-200 ${
+                    className={`p-4 rounded-xl border text-left flex flex-col justify-between h-24 transition-all duration-200 cursor-pointer ${
                       paymentMethod === pm.value
                         ? 'border-primary bg-primary/5 text-primary'
                         : 'border-zinc-850 bg-[#121212] text-zinc-400 hover:text-white'
@@ -499,7 +492,7 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <span className="text-[10px] text-zinc-500">
-                      {pm.value === 'COD' ? 'Pay cash on arrival' : 'Instant secure gateway'}
+                      {pm.desc}
                     </span>
                   </button>
                 ))}
@@ -664,75 +657,6 @@ export default function CheckoutPage() {
         )}
       </div>
 
-      {/* UPI Payment Modal Dialog */}
-      <AnimatePresence>
-        {showUpiModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => !upiLoading && setShowUpiModal(false)}
-              className="absolute inset-0 bg-black/85 backdrop-blur-sm"
-            />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative z-10 w-full max-w-sm mx-4 bg-[#111] border border-zinc-850 p-6 rounded-3xl text-center space-y-6 shadow-2xl"
-            >
-              <h3 className="font-serif text-lg font-bold text-white tracking-wide">
-                UPI PAYMENT GATEWAY
-              </h3>
-              
-              {upiLoading ? (
-                <div className="py-8 space-y-4">
-                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-                  <p className="text-zinc-400 text-xs font-semibold">Verifying transaction signature...</p>
-                </div>
-              ) : (
-                <>
-                  <p className="text-zinc-400 text-xs leading-relaxed">
-                    Please scan the secure merchant QR code below using your favorite UPI app (GPay / PhonePe / Paytm / BHIM) to complete your payment of <strong className="text-white">₹{grandTotal}</strong>.
-                  </p>
-
-                  {/* QR Code Container */}
-                  <div className="w-48 h-48 bg-white p-3 rounded-2xl mx-auto flex items-center justify-center border-4 border-zinc-900 shadow-inner relative group">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=6303263714@ybl%26pn=TheParathaDuniya%26am=${grandTotal}%26cu=INR`}
-                      alt="Payment QR"
-                      className="w-full h-full object-contain"
-                    />
-                    <div className="absolute inset-0 bg-black/5 rounded-2xl pointer-events-none" />
-                  </div>
-
-                  <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
-                    UPI ID: 6303263714@ybl
-                  </div>
-
-                  <button
-                    id="confirm-payment-btn"
-                    disabled={upiLoading}
-                    onClick={handleConfirmUpiPayment}
-                    className="w-full py-3.5 bg-primary text-black font-extrabold text-sm rounded-xl text-center hover:bg-amber-400 transition-all duration-300 gold-glow flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
-                  >
-                    <span>{upiLoading ? 'Placing Order...' : 'I Have Paid / Confirm Order'}</span>
-                    <ArrowRight className="w-4.5 h-4.5" />
-                  </button>
-
-                  <button
-                    onClick={() => setShowUpiModal(false)}
-                    className="text-zinc-500 hover:text-zinc-300 text-xs font-semibold transition-colors"
-                  >
-                    Cancel Payment
-                  </button>
-                </>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

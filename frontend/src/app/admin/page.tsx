@@ -931,9 +931,25 @@ Best regards,
                       <tr key={o.id} className="hover:bg-zinc-900/30">
                         <td className="px-6 py-4 font-bold text-white">{o.orderNumber}</td>
                         <td className="px-6 py-4">
-                          <div className="text-xs">
-                            <span className="font-bold text-zinc-200 block">{o.customer.name}</span>
-                            <span className="text-zinc-500 text-[10px] block">{o.customer.phone}</span>
+                          <div className="text-xs space-y-1 max-w-xs">
+                            <span className="font-bold text-zinc-100 block">{o.customer.name}</span>
+                            <a href={`tel:${o.customer.phone}`} className="text-primary hover:underline text-[11px] font-semibold block">
+                              📞 {o.customer.phone}
+                            </a>
+                            <div className="text-[11px] text-zinc-300 leading-tight bg-zinc-950/80 p-2 rounded-lg border border-zinc-850 mt-1">
+                              <span className="text-amber-400 font-bold block text-[10px] uppercase tracking-wider mb-0.5">📍 Delivery Address:</span>
+                              <span className="block font-medium">
+                                {o.customer.houseNo ? `${o.customer.houseNo}, ` : ''}
+                                {o.customer.address}
+                              </span>
+                              {o.customer.landmark && (
+                                <span className="text-zinc-400 block text-[10px] italic">Landmark: {o.customer.landmark}</span>
+                              )}
+                              <span className="text-zinc-400 font-mono text-[10px] block">PIN: {o.customer.pincode}</span>
+                              {o.specialInstructions && (
+                                <span className="text-green-400 block text-[10px] font-semibold mt-1">Note: {o.specialInstructions}</span>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">

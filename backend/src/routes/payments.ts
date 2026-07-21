@@ -15,12 +15,11 @@ router.post('/order', async (req: Request, res: Response): Promise<void> => {
 
   const amountInPaise = Math.round(Number(amount) * 100);
 
-  try {
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keyId = (process.env.RAZORPAY_KEY_ID || '').replace(/['"]/g, '').trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').replace(/['"]/g, '').trim();
 
     // Check if we are running in simulated/mock mode
-    if (!keyId || !keySecret || keyId.startsWith('rzp_test_mockKey')) {
+    if (!keyId || !keySecret || keyId === '' || keyId.startsWith('rzp_test_mockKey')) {
       console.log('Razorpay keys not configured or mock key used. Operating in mock payment mode.');
       res.json({
         id: `order_mock_${Math.random().toString(36).substring(2, 11)}`,

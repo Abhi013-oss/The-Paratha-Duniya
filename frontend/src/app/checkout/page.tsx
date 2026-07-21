@@ -211,9 +211,30 @@ export default function CheckoutPage() {
         return;
       }
 
+      // Ensure Razorpay SDK script is loaded
+      const isScriptLoaded = await new Promise<boolean>((resolve) => {
+        if (typeof window !== 'undefined' && (window as any).Razorpay) {
+          resolve(true);
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+
+      if (!isScriptLoaded) {
+        alert('Razorpay Payment Checkout script failed to load. Please check your network connection.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      const activeRazorpayKey = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '').replace(/['"]/g, '').trim() || 'rzp_test_mockKey123';
+
       // Initialize real Razorpay SDK Modal
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_mockKey123',
+        key: activeRazorpayKey,
         amount: paymentOrder.amount,
         currency: paymentOrder.currency,
         name: 'The Paratha Duniya',

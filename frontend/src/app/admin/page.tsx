@@ -803,13 +803,6 @@ Best regards,
           )}
 
           <button
-            onClick={handleInstallPWA}
-            className="flex items-center justify-center space-x-2 w-full py-2.5 bg-primary text-black font-bold rounded-xl text-xs hover:bg-amber-400 gold-glow transition-all"
-          >
-            <span>📱 Add Admin to Phone</span>
-          </button>
-
-          <button
             onClick={requestNotificationPermission}
             className="flex items-center justify-center space-x-2 w-full py-2.5 bg-green-500/10 border border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white rounded-xl text-xs font-bold transition-all"
           >

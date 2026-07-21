@@ -126,6 +126,24 @@ export default function AdminPortal() {
     }
   };
 
+  const requestNotificationPermission = async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      alert('This browser does not support push notifications.');
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      alert('✅ Mobile Push Notifications Enabled! You will receive instant order banners on your phone screen.');
+      try {
+        new Notification('🔔 Order Notifications Activated!', {
+          body: 'You will receive instant alerts on your phone whenever a new order arrives.',
+        });
+      } catch (e) {}
+    } else {
+      alert('Notification permission was denied. Please allow notifications in your Chrome browser settings.');
+    }
+  };
+
   const checkTokenAndFetch = async () => {
     const token = localStorage.getItem('tpd_admin_token');
     if (!token) return;
@@ -166,6 +184,17 @@ export default function AdminPortal() {
         setOrders(prev => {
           if (prev.length > 0 && oData.length > prev.length) {
             playNewOrderChime();
+            const latestOrder = oData[0];
+            if ('Notification' in window && Notification.permission === 'granted') {
+              try {
+                new Notification('🚨 NEW PARATHA ORDER RECEIVED!', {
+                  body: `Order ${latestOrder?.orderNumber} (₹${latestOrder?.total}) by ${latestOrder?.customer?.name || 'Customer'}. Tap to review!`,
+                  icon: '/images/aloo.jpg',
+                });
+              } catch (err) {
+                console.log('Mobile push notification failed:', err);
+              }
+            }
           }
           return oData;
         });
@@ -778,6 +807,13 @@ Best regards,
             className="flex items-center justify-center space-x-2 w-full py-2.5 bg-primary text-black font-bold rounded-xl text-xs hover:bg-amber-400 gold-glow transition-all"
           >
             <span>📱 Add Admin to Phone</span>
+          </button>
+
+          <button
+            onClick={requestNotificationPermission}
+            className="flex items-center justify-center space-x-2 w-full py-2.5 bg-green-500/10 border border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white rounded-xl text-xs font-bold transition-all"
+          >
+            <span>🔔 Enable Push Alerts</span>
           </button>
 
           <button

@@ -37,9 +37,37 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+import { useAuth } from './AuthContext';
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+  const { token } = useAuth();
+
+  // Load cart from database when logged in
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchDBCart = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/orders/active-cart`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.items && data.items.length > 0) {
+            setCart(data.items);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load cart from DB:', err);
+      }
+    };
+
+    fetchDBCart();
+  }, [token]);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -78,7 +106,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
       }).catch(err => console.log('Cart sync error:', err));
     }
-  }, [cart]);
+  }, [cart, token]);
 
   // Save coupon to localStorage on changes
   useEffect(() => {

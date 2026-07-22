@@ -25,6 +25,52 @@ async function generateOrderNumber(): Promise<string> {
   return `TPD-${nextNumber}`;
 }
 
+// Customer: Get active cart from server
+router.get('/active-cart', async (req: Request, res: Response): Promise<void> => {
+  const authHeader = req.headers.authorization;
+  const authCustomer = getCustomerFromToken(authHeader);
+
+  if (!authCustomer) {
+    res.status(401).json({ error: 'Access denied. Valid customer token is required.' });
+    return;
+  }
+
+  try {
+    const cartOrder = await prisma.order.findFirst({
+      where: {
+        customerId: authCustomer.id,
+        status: 'CART',
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    if (!cartOrder) {
+      res.json({ items: [] });
+      return;
+    }
+
+    const formattedItems = cartOrder.items.map(it => ({
+      id: it.product.id,
+      name: it.product.name,
+      price: it.product.price,
+      image: it.product.image,
+      isVeg: it.product.isVeg,
+      quantity: it.quantity,
+    }));
+
+    res.json({ items: formattedItems });
+  } catch (error) {
+    console.error('Fetch active cart error:', error);
+    res.status(500).json({ error: 'Failed to retrieve active cart.' });
+  }
+});
+
 // Customer: Sync active cart to the server
 router.post('/sync-cart', async (req: Request, res: Response): Promise<void> => {
   const authHeader = req.headers.authorization;

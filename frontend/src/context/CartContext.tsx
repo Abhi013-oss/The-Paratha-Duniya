@@ -61,9 +61,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Save cart to localStorage on changes
+  // Save cart to localStorage and sync with backend on changes
   useEffect(() => {
     localStorage.setItem('tpd_cart', JSON.stringify(cart));
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('tpd_customer_token') : null;
+    if (token) {
+      fetch(`${API_BASE_URL}/api/orders/sync-cart`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          items: cart.map(i => ({ productId: i.id, quantity: i.quantity }))
+        })
+      }).catch(err => console.log('Cart sync error:', err));
+    }
   }, [cart]);
 
   // Save coupon to localStorage on changes

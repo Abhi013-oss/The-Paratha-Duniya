@@ -25,6 +25,120 @@ async function generateOrderNumber(): Promise<string> {
   return `TPD-${nextNumber}`;
 }
 
+// Customer: Sync active cart to the server
+router.post('/sync-cart', async (req: Request, res: Response): Promise<void> => {
+  const authHeader = req.headers.authorization;
+  const authCustomer = getCustomerFromToken(authHeader);
+
+  if (!authCustomer) {
+    res.status(401).json({ error: 'Access denied. Valid customer token is required.' });
+    return;
+  }
+
+  const { items } = req.body;
+
+  try {
+    // 1. If cart is empty, delete the existing CART status order if it exists
+    if (!items || items.length === 0) {
+      await prisma.order.deleteMany({
+        where: {
+          customerId: authCustomer.id,
+          status: 'CART',
+        },
+      });
+      res.json({ message: 'Cart cleared successfully.' });
+      return;
+    }
+
+    // 2. Fetch products and calculate total
+    let total = 0;
+    const orderItems = [];
+
+    for (const item of items) {
+      const product = await prisma.product.findUnique({
+        where: { id: Number(item.productId) },
+      });
+
+      if (product && product.isActive) {
+        total += product.price * Number(item.quantity);
+        orderItems.push({
+          productId: product.id,
+          quantity: Number(item.quantity),
+          price: product.price,
+        });
+      }
+    }
+
+    if (orderItems.length === 0) {
+      await prisma.order.deleteMany({
+        where: {
+          customerId: authCustomer.id,
+          status: 'CART',
+        },
+      });
+      res.json({ message: 'Cart items resolved to empty.' });
+      return;
+    }
+
+    // 3. Find if there is an existing CART order
+    const existingCart = await prisma.order.findFirst({
+      where: {
+        customerId: authCustomer.id,
+        status: 'CART',
+      },
+    });
+
+    if (existingCart) {
+      // Delete existing order items
+      await prisma.orderItem.deleteMany({
+        where: { orderId: existingCart.id },
+      });
+
+      // Update cart total
+      const updatedCart = await prisma.order.update({
+        where: { id: existingCart.id },
+        data: {
+          subtotal: total,
+          total: total,
+          items: {
+            create: orderItems.map(item => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
+        },
+      });
+      res.json({ message: 'Cart synced successfully.', orderId: updatedCart.id });
+    } else {
+      // Create new CART order
+      const orderNumber = `CART-${authCustomer.id}-${Date.now().toString().slice(-4)}`;
+      const newCart = await prisma.order.create({
+        data: {
+          orderNumber,
+          customerId: authCustomer.id,
+          subtotal: total,
+          total: total,
+          status: 'CART',
+          paymentStatus: 'PENDING',
+          paymentMethod: 'COD',
+          items: {
+            create: orderItems.map(item => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
+        },
+      });
+      res.json({ message: 'Cart synced successfully.', orderId: newCart.id });
+    }
+  } catch (error) {
+    console.error('Sync cart error:', error);
+    res.status(500).json({ error: 'Failed to sync cart.' });
+  }
+});
+
 // Customer: Get my orders
 router.get('/my-orders', async (req: Request, res: Response): Promise<void> => {
   const authHeader = req.headers.authorization;
@@ -37,7 +151,10 @@ router.get('/my-orders', async (req: Request, res: Response): Promise<void> => {
 
   try {
     const orders = await prisma.order.findMany({
-      where: { customerId: authCustomer.id },
+      where: { 
+        customerId: authCustomer.id,
+        status: { not: 'CART' }
+      },
       include: {
         items: {
           include: {
@@ -221,6 +338,14 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     const total = subtotal - discount;
     const orderNumber = await generateOrderNumber();
 
+    // Delete any active CART status order to prevent it from lingering
+    await prisma.order.deleteMany({
+      where: {
+        customerId: customer.id,
+        status: 'CART',
+      },
+    });
+
     // 4. Create the Order
     const newOrder = await prisma.order.create({
       data: {
@@ -352,6 +477,8 @@ router.get('/', authenticateAdmin, async (req: Request, res: Response) => {
 
     if (status) {
       whereClause.status = String(status);
+    } else {
+      whereClause.status = { not: 'CART' };
     }
 
     if (paymentMethod) {

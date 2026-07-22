@@ -34,9 +34,10 @@ export default function AdminPortal() {
   const [loginError, setLoginError] = useState('');
 
   // Dashboard state
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'products' | 'customers' | 'coupons' | 'messages' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'abandoned' | 'products' | 'customers' | 'coupons' | 'messages' | 'settings'>('dashboard');
   const [isSimulated, setIsSimulated] = useState(false);
   const [orders, setOrders] = useState<any[]>(initialMockOrders);
+  const [cartOrders, setCartOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>(initialMockProducts);
   const [customers, setCustomers] = useState<any[]>(mockCustomers);
   const [coupons, setCoupons] = useState<any[]>(initialMockCoupons);
@@ -102,10 +103,19 @@ export default function AdminPortal() {
       setIsLoggedIn(true);
       fetchRealAdminData();
     } else {
-      // For evaluation, let them login or run simulated data directly if requested
       setIsLoggedIn(false);
     }
   }, []);
+
+  // Poll real-time order and cart updates every 10 seconds
+  useEffect(() => {
+    if (isLoggedIn) {
+      const interval = setInterval(() => {
+        fetchRealAdminData();
+      }, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [isLoggedIn]);
 
   const playNewOrderChime = () => {
     try {
@@ -222,6 +232,30 @@ export default function AdminPortal() {
         } catch (err) {
           console.error('Auto delivery checker failed:', err);
         }
+      }
+
+      // Fetch idle/abandoned carts
+      const cartRes = await fetch(`${API_BASE_URL}/api/orders?status=CART`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (cartRes.ok) {
+        const cartData = await cartRes.json();
+        setCartOrders(prev => {
+          if (prev.length > 0 && cartData.length > prev.length) {
+            const newCart = cartData.find((c: any) => !prev.some((p: any) => p.id === c.id));
+            if (newCart) {
+              playNewOrderChime();
+              if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                  new Notification('🛒 Idle Customer Alert', {
+                    body: `Customer ${newCart.customer.name} added items to cart (₹${newCart.total}) but has not placed the order yet!`,
+                  });
+                } catch (e) {}
+              }
+            }
+          }
+          return cartData;
+        });
       }
 
       const custRes = await fetch(`${API_BASE_URL}/api/customers`, {
@@ -770,6 +804,7 @@ Best regards,
             {[
               { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
               { id: 'orders', label: 'Order Manager', icon: ShoppingBag },
+              { id: 'abandoned', label: 'Idle Carts 🛒', icon: ShoppingBag },
               { id: 'products', label: 'Product Inventory', icon: Plus },
               { id: 'customers', label: 'Customer Base', icon: Users },
               { id: 'coupons', label: 'Promo Coupons', icon: Ticket },
@@ -1014,6 +1049,77 @@ Best regards,
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: IDLE CARTS & UNPAID CHECKS */}
+        {activeTab === 'abandoned' && (
+          <div className="space-y-8 text-left print:hidden">
+            <div className="flex items-center justify-between">
+              <h1 className="font-serif text-3xl font-extrabold text-white">Idle Carts & Unpaid Checks 🛒</h1>
+              <span className="px-3.5 py-1.5 bg-amber-500/10 border border-amber-500/25 text-amber-500 rounded-full text-xs font-bold uppercase tracking-wider">
+                {cartOrders.length} Customers Active
+              </span>
+            </div>
+
+            <div className="glass-panel rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-zinc-350">
+                  <thead className="text-xs font-bold text-zinc-400 uppercase bg-zinc-950 border-b border-zinc-900">
+                    <tr>
+                      <th className="px-6 py-4">Cart ID</th>
+                      <th className="px-6 py-4">Customer Details</th>
+                      <th className="px-6 py-4">Items Added to Cart</th>
+                      <th className="px-6 py-4">Cart Value</th>
+                      <th className="px-6 py-4 text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-900/60">
+                    {cartOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center text-zinc-500 text-sm font-medium">
+                          No active idle customer carts found on server.
+                        </td>
+                      </tr>
+                    ) : (
+                      cartOrders.map((o) => (
+                        <tr key={o.id} className="hover:bg-zinc-900/30">
+                          <td className="px-6 py-4 font-mono text-xs font-bold text-zinc-450">{o.orderNumber}</td>
+                          <td className="px-6 py-4">
+                            <div className="text-xs space-y-1">
+                              <span className="font-bold text-zinc-100 block">{o.customer.name}</span>
+                              <a href={`tel:${o.customer.phone}`} className="text-primary hover:underline text-[11px] font-semibold block">
+                                📞 {o.customer.phone}
+                              </a>
+                              {o.customer.address && (
+                                <div className="text-[10px] text-zinc-400 max-w-xs mt-1">
+                                  📍 {o.customer.houseNo ? `${o.customer.houseNo}, ` : ''}{o.customer.address} (Landmark: {o.customer.landmark || 'N/A'})
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-xs text-zinc-300 font-semibold space-y-1">
+                              {o.items.map((it: any, idx: number) => (
+                                <div key={idx}>
+                                  🫓 {it.product.name} (x{it.quantity})
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 font-extrabold text-primary">₹{o.total}</td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="text-[10px] bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                              Idle Cart (Not Ordered)
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
